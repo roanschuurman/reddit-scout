@@ -6,6 +6,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Reddit Scout is an AI-powered Reddit monitoring and engagement tool. It monitors subreddits for keyword matches, generates AI-drafted responses, and notifies users via Discord for manual posting.
 
+## Development Commands
+
+```bash
+# Start services (PostgreSQL + web app)
+docker compose up
+
+# Install dependencies locally (using uv)
+uv pip install -e ".[dev]"
+
+# Run web app locally
+uvicorn reddit_scout.api.main:app --reload
+
+# Run tests
+pytest
+
+# Run linter
+ruff check src tests
+
+# Run type checker
+mypy src
+
+# Database migrations (after Alembic is set up)
+alembic upgrade head
+alembic revision --autogenerate -m "description"
+```
+
 ## Tech Stack
 
 - **Backend**: Python with FastAPI

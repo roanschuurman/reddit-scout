@@ -1,0 +1,1 @@
+"""Reddit scanner service module."""
