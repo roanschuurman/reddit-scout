@@ -8,6 +8,9 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
+    # App
+    secret_key: str = "change-me-in-production-use-a-real-secret-key"
+
     # Database
     database_url: str = "postgresql+asyncpg://reddit_scout:reddit_scout_dev@localhost:5432/reddit_scout"
 

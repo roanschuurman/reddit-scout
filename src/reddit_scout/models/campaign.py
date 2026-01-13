@@ -1,11 +1,16 @@
 """Campaign models."""
 
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from reddit_scout.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from reddit_scout.models.match import Match
+    from reddit_scout.models.user import User
 
 
 class Campaign(Base, TimestampMixin):
@@ -29,7 +34,9 @@ class Campaign(Base, TimestampMixin):
     keywords: Mapped[list["CampaignKeyword"]] = relationship(
         back_populates="campaign", cascade="all, delete-orphan"
     )
-    matches: Mapped[list["Match"]] = relationship(back_populates="campaign", cascade="all, delete-orphan")
+    matches: Mapped[list["Match"]] = relationship(
+        back_populates="campaign", cascade="all, delete-orphan"
+    )
 
 
 class CampaignSubreddit(Base):

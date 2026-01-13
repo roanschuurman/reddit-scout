@@ -9,7 +9,14 @@
                 AI-powered Reddit monitoring and engagement.
                 Find relevant conversations, get AI-drafted responses, and engage authentically.
             </p>
-            <a href="/campaigns" class="btn btn-primary">Get Started</a>
+            {% if user %}
+            <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+            {% else %}
+            <div class="flex gap-4 justify-center">
+                <a href="/register" class="btn btn-primary">Get Started</a>
+                <a href="/login" class="btn btn-outline">Login</a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

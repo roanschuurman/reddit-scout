@@ -2,11 +2,15 @@
 
 from datetime import datetime
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from reddit_scout.models.base import Base
+
+if TYPE_CHECKING:
+    from reddit_scout.models.campaign import Campaign
 
 
 class MatchStatus(str, Enum):
@@ -40,7 +44,9 @@ class Match(Base):
     permalink: Mapped[str] = mapped_column(String(512), nullable=False)
     author: Mapped[str] = mapped_column(String(255), nullable=False)
     created_utc: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    discovered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    discovered_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     status: Mapped[str] = mapped_column(String(50), default=MatchStatus.PENDING.value)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     discord_message_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -61,7 +67,9 @@ class DraftResponse(Base):
     match_id: Mapped[int] = mapped_column(ForeignKey("matches.id"), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     version: Mapped[int] = mapped_column(Integer, default=1)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     is_final: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Relationships

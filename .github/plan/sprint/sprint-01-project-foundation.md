@@ -15,25 +15,25 @@
 - [x] Add basic health check endpoint
 
 ### Phase 2: Database Migrations
-- [ ] Initialize Alembic
-- [ ] Create initial migration with all models
-- [ ] Test migration up/down
+- [x] Initialize Alembic
+- [x] Create initial migration with all models
+- [x] Test migration up/down
 
 ### Phase 3: Authentication
-- [ ] Configure SuperTokens (or simple session-based auth for MVP)
-- [ ] Create login/register pages
-- [ ] Protect routes requiring authentication
-- [ ] Add current user to request context
+- [x] Configure session-based auth for MVP (using bcrypt + signed cookies)
+- [x] Create login/register pages
+- [x] Protect routes requiring authentication
+- [x] Add current user to request context
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] `docker compose up` starts PostgreSQL and web app
-- [ ] Database migrations run successfully
-- [ ] User can register and log in
-- [ ] Protected routes redirect to login
-- [ ] Health check returns 200
+- [x] `docker compose up` starts PostgreSQL and web app
+- [x] Database migrations run successfully
+- [x] User can register and log in
+- [x] Protected routes redirect to login
+- [x] Health check returns 200
 
 ---
 
@@ -41,4 +41,11 @@
 
 - Using HTMX + Jinja2 for frontend (no JS build step)
 - DaisyUI provides component styling on top of Tailwind
-- SuperTokens for auth to prepare for future multi-tenancy
+- Implemented simple session-based auth with bcrypt for MVP (SuperTokens can be added later)
+- Sessions use signed cookies via itsdangerous
+
+## Decisions Made
+
+- Used bcrypt directly instead of passlib due to compatibility issues with Python 3.14
+- Implemented session-based auth instead of SuperTokens for MVP simplicity
+- Added greenlet dependency for async Alembic migrations
