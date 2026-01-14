@@ -2,18 +2,18 @@
 
 ## Current Sprint
 
-- Sprint 01: Project Foundation - IN PROGRESS
+_(none)_
 
 ## Completed
 
-_(none yet)_
+- Sprint 01: Project Foundation - DONE (see sprint_backup/sprint-01-2026-01-14.md)
 
 ## Upcoming
 
 ### Foundation & Infrastructure
-- [ ] Alembic migrations setup
-- [ ] SuperTokens auth integration
-- [ ] User registration/login flow
+- [x] Alembic migrations setup _(Sprint 01)_
+- [x] User registration/login flow _(Sprint 01)_
+- [ ] SuperTokens auth integration _(deferred - using session auth for MVP)_
 
 ### Campaign Management (Web App)
 - [ ] Campaign CRUD operations
