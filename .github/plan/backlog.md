@@ -2,7 +2,7 @@
 
 ## Current Sprint
 
-_(none)_
+- Sprint 02: Campaign CRUD - IN PROGRESS (see sprint/sprint-02-campaign-crud.md)
 
 ## Completed
 

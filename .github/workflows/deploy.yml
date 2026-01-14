@@ -1,0 +1,63 @@
+name: Deploy
+
+on:
+  push:
+    branches: [staging, production]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Run tests
+        run: uv run pytest tests/ -v --tb=short
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set environment
+        id: env
+        run: |
+          if [ "${{ github.ref_name }}" = "production" ]; then
+            echo "env_name=production" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Trigger Coolify deployment
+        if: vars.COOLIFY_WEBHOOK_URL != ''
+        run: |
+          curl -X POST "${{ vars.COOLIFY_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            --fail --silent --show-error
+        continue-on-error: true
+
+      - name: Deployment summary
+        run: |
+          echo "## Deployment to ${{ steps.env.outputs.env_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Branch: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Coolify will automatically:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Build the Docker image" >> $GITHUB_STEP_SUMMARY
+          echo "2. Create database if not exists" >> $GITHUB_STEP_SUMMARY
+          echo "3. Run migrations" >> $GITHUB_STEP_SUMMARY
+          echo "4. Deploy the new version" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}{{ campaign.name }} - Reddit Scout{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-center gap-4 mb-6">
+        <a href="/campaigns" class="btn btn-ghost btn-sm">Back</a>
+        <h1 class="text-2xl font-bold flex-1">{{ campaign.name }}</h1>
+        {% if campaign.is_active %}
+        <span class="badge badge-success badge-lg">Active</span>
+        {% else %}
+        <span class="badge badge-ghost badge-lg">Inactive</span>
+        {% endif %}
+    </div>
+
+    {% if flash_success %}
+    <div class="alert alert-success mb-6">
+        <span>{{ flash_success }}</span>
+    </div>
+    {% endif %}
+
+    <div class="grid gap-6 lg:grid-cols-3">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">System Prompt</h2>
+                    <pre class="whitespace-pre-wrap text-sm bg-base-200 p-4 rounded-lg">{{ campaign.system_prompt }}</pre>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Subreddits</h2>
+                    {% if campaign.subreddits %}
+                    <div class="flex flex-wrap gap-2">
+                        {% for sub in campaign.subreddits %}
+                        <span class="badge badge-outline">r/{{ sub.subreddit_name }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-base-content/50">No subreddits configured yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Keywords</h2>
+                    {% if campaign.keywords %}
+                    <div class="flex flex-wrap gap-2">
+                        {% for kw in campaign.keywords %}
+                        <span class="badge badge-primary">{{ kw.phrase }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-base-content/50">No keywords configured yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Settings</h2>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-base-content/70">Scan Frequency</span>
+                            <span>Every {{ campaign.scan_frequency_minutes }} min</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-base-content/70">Discord Channel</span>
+                            <span>{{ campaign.discord_channel_id or 'Not set' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-base-content/70">Created</span>
+                            <span>{{ campaign.created_at.strftime('%b %d, %Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Actions</h2>
+                    <div class="space-y-2">
+                        <a href="/campaigns/{{ campaign.id }}/edit" class="btn btn-outline btn-block">Edit Campaign</a>
+                        <button onclick="delete_modal.showModal()" class="btn btn-error btn-outline btn-block">Delete Campaign</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<dialog id="delete_modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Delete Campaign</h3>
+        <p class="py-4">Are you sure you want to delete "{{ campaign.name }}"? This action cannot be undone and will delete all associated matches and draft responses.</p>
+        <div class="modal-action">
+            <form method="dialog">
+                <button class="btn btn-ghost">Cancel</button>
+            </form>
+            <form method="post" action="/campaigns/{{ campaign.id }}/delete">
+                <button type="submit" class="btn btn-error">Delete</button>
+            </form>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+{% endblock %}

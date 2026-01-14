@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from reddit_scout.api.deps import get_current_user, get_current_user_optional
-from reddit_scout.api.routes import auth_router
+from reddit_scout.api.routes import auth_router, campaigns_router
 from reddit_scout.models import User
 
 app = FastAPI(
@@ -36,6 +36,7 @@ templates = Jinja2Templates(directory="src/reddit_scout/templates")
 
 # Include routers
 app.include_router(auth_router)
+app.include_router(campaigns_router)
 
 
 @app.get("/", response_class=HTMLResponse)
