@@ -2,10 +2,11 @@
 
 ## Current Sprint
 
-- Sprint 03: Campaign Configuration - IN PROGRESS (see sprint/sprint-03-campaign-config.md)
+_(none)_
 
 ## Completed
 
+- Sprint 03: Campaign Configuration - DONE (see sprint_backup/sprint-03-2026-01-14.md)
 - Sprint 02: Campaign CRUD - DONE (see sprint_backup/sprint-02-2026-01-14.md)
 - Sprint 01: Project Foundation - DONE (see sprint_backup/sprint-01-2026-01-14.md)
 
