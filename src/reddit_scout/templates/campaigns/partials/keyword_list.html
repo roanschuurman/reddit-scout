@@ -1,0 +1,45 @@
+<div id="keyword-list">
+    {% if error %}
+    <div class="alert alert-error alert-sm mb-3">
+        <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <form
+        hx-post="/campaigns/{{ campaign.id }}/keywords"
+        hx-target="#keyword-list"
+        hx-swap="outerHTML"
+        class="flex gap-2 mb-3"
+    >
+        <input
+            type="text"
+            name="phrase"
+            placeholder="e.g., best tool for"
+            class="input input-bordered input-sm flex-1"
+        />
+        <button type="submit" class="btn btn-primary btn-sm">Add</button>
+    </form>
+
+    {% if campaign.keywords %}
+    <div class="flex flex-wrap gap-2">
+        {% for kw in campaign.keywords %}
+        <div class="badge badge-primary gap-1 pr-1">
+            {{ kw.phrase }}
+            <button
+                hx-delete="/campaigns/{{ campaign.id }}/keywords/{{ kw.id }}"
+                hx-target="#keyword-list"
+                hx-swap="outerHTML"
+                hx-confirm="Remove '{{ kw.phrase }}'?"
+                class="btn btn-ghost btn-xs btn-circle"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-base-content/50 text-sm">No keywords added yet.</p>
+    {% endif %}
+</div>

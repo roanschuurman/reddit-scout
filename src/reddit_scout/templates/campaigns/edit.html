@@ -50,6 +50,43 @@
                 {% endif %}
             </div>
 
+            <div class="form-control mb-4">
+                <label class="label" for="scan_frequency_minutes">
+                    <span class="label-text">Scan Frequency</span>
+                </label>
+                <select
+                    id="scan_frequency_minutes"
+                    name="scan_frequency_minutes"
+                    class="select select-bordered w-full {% if errors and errors.scan_frequency_minutes %}select-error{% endif %}"
+                >
+                    {% for minutes, label in scan_frequency_options %}
+                    <option value="{{ minutes }}" {% if campaign.scan_frequency_minutes == minutes %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if errors and errors.scan_frequency_minutes %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ errors.scan_frequency_minutes }}</span>
+                </label>
+                {% endif %}
+            </div>
+
+            <div class="form-control mb-4">
+                <label class="label" for="discord_channel_id">
+                    <span class="label-text">Discord Channel ID</span>
+                    <span class="label-text-alt">Optional - for notifications</span>
+                </label>
+                <input
+                    type="text"
+                    id="discord_channel_id"
+                    name="discord_channel_id"
+                    placeholder="e.g., 1234567890123456789"
+                    class="input input-bordered w-full"
+                    value="{{ campaign.discord_channel_id or '' }}"
+                />
+            </div>
+
             <div class="form-control mb-6">
                 <label class="label cursor-pointer justify-start gap-3">
                     <input

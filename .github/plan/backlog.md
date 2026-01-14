@@ -2,10 +2,11 @@
 
 ## Current Sprint
 
-- Sprint 02: Campaign CRUD - IN PROGRESS (see sprint/sprint-02-campaign-crud.md)
+- Sprint 03: Campaign Configuration - IN PROGRESS (see sprint/sprint-03-campaign-config.md)
 
 ## Completed
 
+- Sprint 02: Campaign CRUD - DONE (see sprint_backup/sprint-02-2026-01-14.md)
 - Sprint 01: Project Foundation - DONE (see sprint_backup/sprint-01-2026-01-14.md)
 
 ## Upcoming
@@ -16,12 +17,12 @@
 - [ ] SuperTokens auth integration _(deferred - using session auth for MVP)_
 
 ### Campaign Management (Web App)
-- [ ] Campaign CRUD operations
-- [ ] Configure subreddits per campaign
-- [ ] Configure keywords per campaign
-- [ ] Custom AI system prompt per campaign
-- [ ] Set scan frequency (2x/day to 1x/hour)
-- [ ] Assign Discord channel per campaign
+- [x] Campaign CRUD operations _(Sprint 02)_
+- [x] Configure subreddits per campaign _(Sprint 03)_
+- [x] Configure keywords per campaign _(Sprint 03)_
+- [x] Custom AI system prompt per campaign _(Sprint 02 - part of campaign create/edit)_
+- [x] Set scan frequency (2x/day to 1x/hour) _(Sprint 03)_
+- [x] Assign Discord channel per campaign _(Sprint 03)_
 
 ### Subreddit Discovery (Web App)
 - [ ] Search subreddits by keyword

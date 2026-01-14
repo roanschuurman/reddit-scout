@@ -32,30 +32,14 @@
             <div class="card bg-base-100 shadow-xl">
                 <div class="card-body">
                     <h2 class="card-title">Subreddits</h2>
-                    {% if campaign.subreddits %}
-                    <div class="flex flex-wrap gap-2">
-                        {% for sub in campaign.subreddits %}
-                        <span class="badge badge-outline">r/{{ sub.subreddit_name }}</span>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="text-base-content/50">No subreddits configured yet.</p>
-                    {% endif %}
+                    {% include "campaigns/partials/subreddit_list.html" %}
                 </div>
             </div>
 
             <div class="card bg-base-100 shadow-xl">
                 <div class="card-body">
                     <h2 class="card-title">Keywords</h2>
-                    {% if campaign.keywords %}
-                    <div class="flex flex-wrap gap-2">
-                        {% for kw in campaign.keywords %}
-                        <span class="badge badge-primary">{{ kw.phrase }}</span>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="text-base-content/50">No keywords configured yet.</p>
-                    {% endif %}
+                    {% include "campaigns/partials/keyword_list.html" %}
                 </div>
             </div>
         </div>
@@ -67,7 +51,11 @@
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
                             <span class="text-base-content/70">Scan Frequency</span>
-                            <span>Every {{ campaign.scan_frequency_minutes }} min</span>
+                            <span>
+                                {% for minutes, label in scan_frequency_options %}
+                                    {% if minutes == campaign.scan_frequency_minutes %}{{ label }}{% endif %}
+                                {% endfor %}
+                            </span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-base-content/70">Discord Channel</span>
