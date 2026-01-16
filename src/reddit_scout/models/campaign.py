@@ -25,6 +25,7 @@ class Campaign(Base, TimestampMixin):
     scan_frequency_minutes: Mapped[int] = mapped_column(Integer, default=60)
     discord_channel_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    last_scanned_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Relationships
     user: Mapped["User"] = relationship(back_populates="campaigns")

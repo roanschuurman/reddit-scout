@@ -2,7 +2,7 @@
 
 ## Current Sprint
 
-_(none)_
+- Sprint 04: Reddit Scanner Service - IN PROGRESS
 
 ## Completed
 
