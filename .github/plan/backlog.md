@@ -2,10 +2,11 @@
 
 ## Current Sprint
 
-- Sprint 04: Reddit Scanner Service - IN PROGRESS
+_None active_
 
 ## Completed
 
+- Sprint 04: Reddit Scanner Service - DONE (see sprint_backup/sprint-04-2026-01-17.md)
 - Sprint 03: Campaign Configuration - DONE (see sprint_backup/sprint-03-2026-01-14.md)
 - Sprint 02: Campaign CRUD - DONE (see sprint_backup/sprint-02-2026-01-14.md)
 - Sprint 01: Project Foundation - DONE (see sprint_backup/sprint-01-2026-01-14.md)
@@ -32,10 +33,10 @@
 - [ ] Show related subreddit suggestions
 
 ### Reddit Monitoring (Scanner Service)
-- [ ] PRAW integration for Reddit API
-- [ ] Scan subreddits at configured frequency
-- [ ] Match posts AND comments against keywords
-- [ ] Deduplicate matches
+- [x] PRAW integration for Reddit API _(Sprint 04)_
+- [x] Scan subreddits at configured frequency _(Sprint 04)_
+- [x] Match posts AND comments against keywords _(Sprint 04)_
+- [x] Deduplicate matches _(Sprint 04)_
 - [ ] Queue matches for AI processing
 
 ### AI Response Generation
