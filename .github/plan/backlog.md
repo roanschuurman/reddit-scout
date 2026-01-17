@@ -2,7 +2,7 @@
 
 ## Current Sprint
 
-(none)
+- Sprint 07: Discord Enhancements - IN PROGRESS
 
 ## Completed
 
