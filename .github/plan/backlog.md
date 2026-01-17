@@ -2,10 +2,11 @@
 
 ## Current Sprint
 
-_None active_
+_None_
 
 ## Completed
 
+- Sprint 05: AI Response Generation & Discord Notifications - DONE (see sprint_backup/sprint-05-2026-01-17.md)
 - Sprint 04: Reddit Scanner Service - DONE (see sprint_backup/sprint-04-2026-01-17.md)
 - Sprint 03: Campaign Configuration - DONE (see sprint_backup/sprint-03-2026-01-14.md)
 - Sprint 02: Campaign CRUD - DONE (see sprint_backup/sprint-02-2026-01-14.md)
@@ -37,19 +38,20 @@ _None active_
 - [x] Scan subreddits at configured frequency _(Sprint 04)_
 - [x] Match posts AND comments against keywords _(Sprint 04)_
 - [x] Deduplicate matches _(Sprint 04)_
-- [ ] Queue matches for AI processing
+- [x] Queue matches for AI processing _(Sprint 05)_
 
 ### AI Response Generation
-- [ ] OpenRouter integration
-- [ ] Generate contextual responses using campaign system prompt
-- [ ] Adapt tone based on context (post vs comment reply)
+- [x] OpenRouter integration _(Sprint 05)_
+- [x] Generate contextual responses using campaign system prompt _(Sprint 05)_
+- [x] Adapt tone based on context (post vs comment reply) _(Sprint 05)_
 
 ### Discord Integration
-- [ ] Discord bot setup
-- [ ] Send notifications to campaign-specific channels
-- [ ] Include: subreddit, post age, keyword, snippet, AI draft, link
-- [ ] Buttons: Done, Regenerate, Refine
-- [ ] Thread-based refinement conversation
+- [x] Discord bot setup _(Sprint 05)_
+- [x] Send notifications to campaign-specific channels _(Sprint 05)_
+- [x] Include: subreddit, post age, keyword, snippet, AI draft, link _(Sprint 05)_
+- [x] Buttons: Done, Skip _(Sprint 05)_
+- [ ] Regenerate button (request new AI draft)
+- [ ] Refine button with thread-based conversation
 - [ ] Copy Final button
 
 ### Match Tracking (Web App)
