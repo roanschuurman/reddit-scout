@@ -2,10 +2,11 @@
 
 ## Current Sprint
 
-_None_
+(none)
 
 ## Completed
 
+- Sprint 06: Subreddit Discovery - DONE (see sprint_backup/sprint-06-2026-01-17.md)
 - Sprint 05: AI Response Generation & Discord Notifications - DONE (see sprint_backup/sprint-05-2026-01-17.md)
 - Sprint 04: Reddit Scanner Service - DONE (see sprint_backup/sprint-04-2026-01-17.md)
 - Sprint 03: Campaign Configuration - DONE (see sprint_backup/sprint-03-2026-01-14.md)
@@ -28,9 +29,9 @@ _None_
 - [x] Assign Discord channel per campaign _(Sprint 03)_
 
 ### Subreddit Discovery (Web App)
-- [ ] Search subreddits by keyword
-- [ ] Display subscriber count + active users
-- [ ] Preview recent posts before adding
+- [x] Search subreddits by keyword _(Sprint 06)_
+- [x] Display subscriber count + active users _(Sprint 06)_
+- [x] Preview recent posts before adding _(Sprint 06)_
 - [ ] Show related subreddit suggestions
 
 ### Reddit Monitoring (Scanner Service)

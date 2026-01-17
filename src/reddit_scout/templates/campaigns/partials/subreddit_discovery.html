@@ -1,0 +1,80 @@
+<div id="discovery-results">
+    {% if error %}
+    <div class="alert alert-error mb-4">
+        <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    {% if subreddits %}
+    <div class="space-y-3">
+        {% for sub in subreddits %}
+        <div class="card bg-base-200">
+            <div class="card-body p-4">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-lg">
+                            r/{{ sub.name }}
+                            {% if sub.is_private %}
+                            <span class="badge badge-warning badge-sm ml-2">Private</span>
+                            {% endif %}
+                            {% if sub.is_quarantined %}
+                            <span class="badge badge-error badge-sm ml-2">Quarantined</span>
+                            {% endif %}
+                        </h3>
+                        <div class="text-sm text-base-content/70 mt-1">
+                            <span>{{ "{:,}".format(sub.subscribers) }} subscribers</span>
+                            {% if sub.active_users %}
+                            <span class="ml-3">{{ "{:,}".format(sub.active_users) }} online</span>
+                            {% endif %}
+                        </div>
+                        {% if sub.public_description %}
+                        <p class="text-sm mt-2 line-clamp-2">{{ sub.public_description }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="flex gap-2 ml-4 flex-shrink-0">
+                        <button
+                            type="button"
+                            class="btn btn-ghost btn-sm"
+                            hx-get="/api/subreddits/{{ sub.name }}/preview"
+                            hx-target="#preview-{{ sub.name | replace('_', '-') }}"
+                            hx-swap="innerHTML"
+                            hx-trigger="click once"
+                            onclick="document.getElementById('preview-{{ sub.name | replace('_', '-') }}').classList.remove('hidden')"
+                        >
+                            Preview
+                        </button>
+                        {% if sub.name|lower in existing_subreddits %}
+                        <button class="btn btn-sm btn-disabled" disabled>Added</button>
+                        {% elif sub.is_private %}
+                        <button class="btn btn-sm btn-disabled" disabled>Private</button>
+                        {% else %}
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            hx-post="/campaigns/{{ campaign_id }}/subreddits"
+                            hx-vals='{"subreddit_name": "{{ sub.name }}"}'
+                            hx-target="#subreddit-list"
+                            hx-swap="outerHTML"
+                        >
+                            Add
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div id="preview-{{ sub.name | replace('_', '-') }}" class="hidden mt-3"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% elif query %}
+    <div class="text-center py-8 text-base-content/50">
+        <p>No subreddits found for "{{ query }}"</p>
+        <p class="text-sm mt-1">Try a different search term</p>
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-base-content/50">
+        <p>Search for subreddits to add to your campaign</p>
+        <p class="text-sm mt-1">Try terms like "python", "startups", or "productivity"</p>
+    </div>
+    {% endif %}
+</div>

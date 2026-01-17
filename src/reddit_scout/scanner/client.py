@@ -22,6 +22,31 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
+class SubredditInfo:
+    """Represents subreddit metadata."""
+
+    name: str
+    subscribers: int
+    active_users: int | None
+    description: str
+    public_description: str
+    is_private: bool
+    is_quarantined: bool
+
+
+@dataclass
+class SubredditPreviewPost:
+    """Represents a post for subreddit preview (minimal data)."""
+
+    id: str
+    title: str
+    score: int
+    num_comments: int
+    created_utc: datetime
+    permalink: str
+
+
+@dataclass
 class RedditPost:
     """Represents a Reddit post."""
 
@@ -217,3 +242,126 @@ class RedditClient:
         except Exception as e:
             logger.error("Reddit API connection failed: %s", str(e))
             return False
+
+    def search_subreddits(self, query: str, limit: int = 10) -> list[SubredditInfo]:
+        """
+        Search for subreddits by keyword.
+
+        Args:
+            query: Search query string
+            limit: Maximum number of results (default 10)
+
+        Returns:
+            List of SubredditInfo objects
+        """
+        reddit = self._get_client()
+
+        def fetch() -> list[Any]:
+            return list(reddit.subreddits.search(query, limit=limit))
+
+        subreddits: list[Any] = self._with_retry(f"search subreddits for '{query}'", fetch) or []
+        results: list[SubredditInfo] = []
+
+        for sub in subreddits:
+            try:
+                results.append(
+                    SubredditInfo(
+                        name=sub.display_name,
+                        subscribers=sub.subscribers or 0,
+                        active_users=getattr(sub, "accounts_active", None),
+                        description=getattr(sub, "description", "") or "",
+                        public_description=getattr(sub, "public_description", "") or "",
+                        is_private=sub.subreddit_type == "private",
+                        is_quarantined=getattr(sub, "quarantine", False),
+                    )
+                )
+            except Exception as e:
+                logger.warning("Error processing subreddit %s: %s", sub.display_name, str(e))
+                continue
+
+        return results
+
+    def get_subreddit_info(self, name: str) -> SubredditInfo | None:
+        """
+        Get detailed information about a specific subreddit.
+
+        Args:
+            name: Subreddit name (without r/ prefix)
+
+        Returns:
+            SubredditInfo or None if not accessible
+        """
+        reddit = self._get_client()
+
+        def fetch() -> Any:
+            try:
+                sub = reddit.subreddit(name)
+                # Force a fetch by accessing an attribute
+                _ = sub.subscribers
+                return sub
+            except (NotFound, Forbidden) as e:
+                logger.warning("Cannot access r/%s: %s", name, str(e))
+                return None
+
+        sub = self._with_retry(f"get info for r/{name}", fetch)
+        if sub is None:
+            return None
+
+        try:
+            return SubredditInfo(
+                name=sub.display_name,
+                subscribers=sub.subscribers or 0,
+                active_users=getattr(sub, "accounts_active", None),
+                description=getattr(sub, "description", "") or "",
+                public_description=getattr(sub, "public_description", "") or "",
+                is_private=sub.subreddit_type == "private",
+                is_quarantined=getattr(sub, "quarantine", False),
+            )
+        except Exception as e:
+            logger.warning("Error getting subreddit info for r/%s: %s", name, str(e))
+            return None
+
+    def get_subreddit_preview(self, name: str, limit: int = 5) -> list[SubredditPreviewPost]:
+        """
+        Get recent posts from a subreddit for preview.
+
+        Args:
+            name: Subreddit name (without r/ prefix)
+            limit: Number of posts to fetch (default 5)
+
+        Returns:
+            List of SubredditPreviewPost objects
+        """
+        reddit = self._get_client()
+
+        def fetch() -> list[Any]:
+            try:
+                subreddit = reddit.subreddit(name)
+                return list(subreddit.hot(limit=limit))
+            except (NotFound, Forbidden) as e:
+                logger.warning("Cannot access posts in r/%s: %s", name, str(e))
+                return []
+
+        posts: list[Any] = self._with_retry(f"get preview posts for r/{name}", fetch) or []
+        results: list[SubredditPreviewPost] = []
+
+        for post in posts:
+            try:
+                # Skip stickied posts for preview
+                if post.stickied:
+                    continue
+                results.append(
+                    SubredditPreviewPost(
+                        id=post.id,
+                        title=post.title,
+                        score=post.score,
+                        num_comments=post.num_comments,
+                        created_utc=datetime.fromtimestamp(post.created_utc, tz=UTC),
+                        permalink=post.permalink,
+                    )
+                )
+            except Exception as e:
+                logger.warning("Error processing preview post %s: %s", post.id, str(e))
+                continue
+
+        return results[:limit]  # Ensure we return exactly limit posts

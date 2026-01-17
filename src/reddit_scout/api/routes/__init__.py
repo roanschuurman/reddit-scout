@@ -2,5 +2,6 @@
 
 from reddit_scout.api.routes.auth import router as auth_router
 from reddit_scout.api.routes.campaigns import router as campaigns_router
+from reddit_scout.api.routes.subreddits import router as subreddits_router
 
-__all__ = ["auth_router", "campaigns_router"]
+__all__ = ["auth_router", "campaigns_router", "subreddits_router"]

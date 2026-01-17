@@ -99,4 +99,42 @@
         <button>close</button>
     </form>
 </dialog>
+
+<dialog id="discovery_modal" class="modal">
+    <div class="modal-box max-w-2xl">
+        <h3 class="font-bold text-lg mb-4">Discover Subreddits</h3>
+        <div id="discovery-search-form" class="form-control">
+            <input
+                type="text"
+                id="subreddit-search"
+                placeholder="Search subreddits... (e.g., python, startups, productivity)"
+                class="input input-bordered w-full"
+                hx-get="/api/subreddits/search?campaign_id={{ campaign.id }}"
+                hx-trigger="input changed delay:300ms, search"
+                hx-target="#discovery-results"
+                hx-swap="outerHTML"
+                hx-indicator="#search-loading"
+                name="q"
+                autocomplete="off"
+            />
+        </div>
+        <span id="search-loading" class="loading loading-spinner loading-sm mt-2 htmx-indicator"></span>
+        <div class="mt-4 max-h-96 overflow-y-auto">
+            <div id="discovery-results">
+                <div class="text-center py-8 text-base-content/50">
+                    <p>Search for subreddits to add to your campaign</p>
+                    <p class="text-sm mt-1">Try terms like "python", "startups", or "productivity"</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-action">
+            <form method="dialog">
+                <button class="btn">Close</button>
+            </form>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
 {% endblock %}
