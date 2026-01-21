@@ -1,4 +1,4 @@
-"""Tests for AI module (OpenRouter client and response generator)."""
+"""Tests for AI module (OpenRouter client and summary generator)."""
 
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -13,7 +13,7 @@ from reddit_scout.ai.client import (
     OpenRouterClient,
     OpenRouterError,
 )
-from reddit_scout.ai.generator import ResponseGenerator, ResponseGeneratorError
+from reddit_scout.ai.generator import SummaryGenerator, SummaryGeneratorError
 from reddit_scout.models import Campaign, Match, User
 from reddit_scout.models.match import MatchStatus, RedditType
 
@@ -128,8 +128,8 @@ class TestOpenRouterClient:
                 )
 
 
-class TestResponseGenerator:
-    """Tests for ResponseGenerator."""
+class TestSummaryGenerator:
+    """Tests for SummaryGenerator."""
 
     @pytest.fixture
     def mock_client(self) -> MagicMock:
@@ -137,7 +137,7 @@ class TestResponseGenerator:
         client = MagicMock(spec=OpenRouterClient)
         client.chat = AsyncMock(
             return_value=ChatCompletion(
-                content="This is a helpful response.",
+                content="This is a helpful summary.",
                 model="test-model",
                 prompt_tokens=50,
                 completion_tokens=20,
@@ -179,26 +179,26 @@ class TestResponseGenerator:
         return result.scalar_one()
 
     @pytest.mark.asyncio
-    async def test_generate_response(
+    async def test_generate_summary(
         self,
         db_session: AsyncSession,
         test_campaign: Campaign,
         test_match: Match,
         mock_client: MagicMock,
     ) -> None:
-        """Test generating a response for a match."""
-        generator = ResponseGenerator(client=mock_client)
+        """Test generating a summary for a match."""
+        generator = SummaryGenerator(client=mock_client)
 
-        result = await generator.generate_response(
+        result = await generator.generate_summary(
             session=db_session,
             match=test_match,
             campaign=test_campaign,
         )
 
         # Verify result
-        assert result.content == "This is a helpful response."
+        assert result.content == "This is a helpful summary."
         assert result.tokens_used == 70
-        assert result.draft_id is not None
+        assert result.summary_id is not None
 
         # Verify the client was called with correct messages
         mock_client.chat.assert_called_once()
@@ -211,7 +211,7 @@ class TestResponseGenerator:
         assert "r/test" in messages[1].content
 
     @pytest.mark.asyncio
-    async def test_regenerate_response_with_feedback(
+    async def test_regenerate_summary_with_feedback(
         self,
         db_session: AsyncSession,
         test_campaign: Campaign,
@@ -221,28 +221,28 @@ class TestResponseGenerator:
         """Test that regeneration includes feedback in the prompt."""
         from reddit_scout.models.match import DraftResponse
 
-        # Add an existing draft to the match
-        existing_draft = DraftResponse(
+        # Add an existing summary to the match
+        existing_summary = DraftResponse(
             match_id=test_match.id,
-            content="First draft",
+            content="First summary",
             version=1,
         )
-        db_session.add(existing_draft)
+        db_session.add(existing_summary)
         await db_session.flush()
 
         # Update the test_match's draft_responses in memory
-        test_match.draft_responses.append(existing_draft)
+        test_match.draft_responses.append(existing_summary)
 
-        generator = ResponseGenerator(client=mock_client)
+        generator = SummaryGenerator(client=mock_client)
 
-        # Generate second response with feedback
-        result = await generator.regenerate_response(
+        # Generate second summary with feedback
+        result = await generator.regenerate_summary(
             session=db_session,
             match=test_match,
-            feedback="Make it more friendly",
+            feedback="Make it more concise",
         )
 
-        assert result.content == "This is a helpful response."
+        assert result.content == "This is a helpful summary."
         assert result.tokens_used == 70
 
         # Verify the client was called with feedback included
@@ -250,15 +250,15 @@ class TestResponseGenerator:
         call_args = mock_client.chat.call_args
         messages = call_args.kwargs.get("messages") or call_args.args[0]
 
-        # Should have: system, user, assistant (previous draft), user (feedback)
+        # Should have: system, user, assistant (previous summary), user (feedback)
         assert len(messages) == 4
         assert messages[2].role == "assistant"
-        assert messages[2].content == "First draft"
+        assert messages[2].content == "First summary"
         assert messages[3].role == "user"
-        assert "friendly" in messages[3].content
+        assert "concise" in messages[3].content
 
     @pytest.mark.asyncio
-    async def test_generate_response_handles_error(
+    async def test_generate_summary_handles_error(
         self,
         db_session: AsyncSession,
         test_campaign: Campaign,
@@ -268,10 +268,10 @@ class TestResponseGenerator:
         mock_client = MagicMock(spec=OpenRouterClient)
         mock_client.chat = AsyncMock(side_effect=OpenRouterError("API error"))
 
-        generator = ResponseGenerator(client=mock_client)
+        generator = SummaryGenerator(client=mock_client)
 
-        with pytest.raises(ResponseGeneratorError, match="AI generation failed"):
-            await generator.generate_response(
+        with pytest.raises(SummaryGeneratorError, match="AI generation failed"):
+            await generator.generate_summary(
                 session=db_session,
                 match=test_match,
                 campaign=test_campaign,
@@ -283,7 +283,7 @@ class TestResponseGenerator:
         test_match: Match,
     ) -> None:
         """Test building prompt for a post."""
-        generator = ResponseGenerator()
+        generator = SummaryGenerator()
         messages = generator._build_prompt(test_match, test_campaign)
 
         assert len(messages) == 2
@@ -303,7 +303,7 @@ class TestResponseGenerator:
         """Test building prompt for a comment."""
         test_match.reddit_type = RedditType.COMMENT.value
 
-        generator = ResponseGenerator()
+        generator = SummaryGenerator()
         messages = generator._build_prompt(test_match, test_campaign)
 
         assert "comment" in messages[1].content

@@ -43,3 +43,9 @@ htmlcov/
 
 # Docker
 postgres_data/
+
+# Internal development files (not for public repo)
+reddit-scout-design-doc.md
+scrum.md
+CLAUDE.md
+.github/plan/

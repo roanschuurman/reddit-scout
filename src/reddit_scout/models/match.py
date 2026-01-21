@@ -1,4 +1,4 @@
-"""Match and draft response models."""
+"""Match and content summary models."""
 
 from datetime import datetime
 from enum import Enum
@@ -59,7 +59,7 @@ class Match(Base):
 
 
 class DraftResponse(Base):
-    """An AI-generated draft response for a match."""
+    """An AI-generated content summary for a match."""
 
     __tablename__ = "draft_responses"
 

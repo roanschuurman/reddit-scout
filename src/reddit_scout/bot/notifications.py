@@ -1,4 +1,4 @@
-"""Discord notification service for matches."""
+"""Discord notification service for content matches."""
 
 import logging
 from dataclasses import dataclass
@@ -52,13 +52,13 @@ def _truncate(text: str, max_length: int, suffix: str = "...") -> str:
     return text[: max_length - len(suffix)] + suffix
 
 
-def build_match_embed(match: Match, draft_content: str | None = None) -> discord.Embed:
+def build_match_embed(match: Match, summary_content: str | None = None) -> discord.Embed:
     """
     Build a Discord embed for a match notification.
 
     Args:
         match: The match to create an embed for
-        draft_content: Optional AI draft response to include
+        summary_content: Optional AI-generated summary to include
 
     Returns:
         Discord Embed object
@@ -73,8 +73,8 @@ def build_match_embed(match: Match, draft_content: str | None = None) -> discord
     │                                         │
     │ > Snippet of the matched content...     │
     │                                         │
-    │ **📝 AI Draft:**                        │
-    │ Generated response text here...         │
+    │ **📋 Summary:**                         │
+    │ Brief summary of the content...         │
     │                                         │
     │ [View on Reddit ↗]                      │
     └─────────────────────────────────────────┘
@@ -123,12 +123,12 @@ def build_match_embed(match: Match, draft_content: str | None = None) -> discord
             inline=False,
         )
 
-    # AI Draft
-    if draft_content:
-        draft_display = _truncate(draft_content, 1000)
+    # Content Summary
+    if summary_content:
+        summary_display = _truncate(summary_content, 1000)
         embed.add_field(
-            name="📝 AI Draft",
-            value=draft_display,
+            name="📋 Summary",
+            value=summary_display,
             inline=False,
         )
 
@@ -149,7 +149,7 @@ def build_match_embed(match: Match, draft_content: str | None = None) -> discord
 async def send_match_notification(
     match: Match,
     channel_id: str,
-    draft_content: str | None = None,
+    summary_content: str | None = None,
 ) -> NotificationResult:
     """
     Send a match notification to a Discord channel.
@@ -157,7 +157,7 @@ async def send_match_notification(
     Args:
         match: The match to notify about
         channel_id: Discord channel ID to send to
-        draft_content: Optional AI draft response to include
+        summary_content: Optional AI-generated summary to include
 
     Returns:
         NotificationResult with success status and message ID
@@ -197,7 +197,7 @@ async def send_match_notification(
             )
 
         # Build the embed
-        embed = build_match_embed(match, draft_content)
+        embed = build_match_embed(match, summary_content)
 
         # Create the view with buttons
         view = MatchActionView(match.id)

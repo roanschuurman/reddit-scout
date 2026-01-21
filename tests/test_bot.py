@@ -138,22 +138,22 @@ class TestBuildMatchEmbed:
         assert "reddit.com" in link_field.value
         assert sample_match.permalink in link_field.value
 
-    def test_embed_with_draft(self, sample_match: Match) -> None:
-        """Test embed includes AI draft when provided."""
-        draft = "This is a helpful AI generated response."
-        embed = build_match_embed(sample_match, draft_content=draft)
+    def test_embed_with_summary(self, sample_match: Match) -> None:
+        """Test embed includes summary when provided."""
+        summary = "This is a helpful AI generated summary."
+        embed = build_match_embed(sample_match, summary_content=summary)
 
         field_names = [f.name for f in embed.fields]
-        assert "📝 AI Draft" in field_names
+        assert "📋 Summary" in field_names
 
-        draft_field = next(f for f in embed.fields if f.name == "📝 AI Draft")
-        assert "helpful" in draft_field.value
+        summary_field = next(f for f in embed.fields if f.name == "📋 Summary")
+        assert "helpful" in summary_field.value
 
-    def test_embed_without_draft(self, sample_match: Match) -> None:
-        """Test embed without AI draft."""
+    def test_embed_without_summary(self, sample_match: Match) -> None:
+        """Test embed without summary."""
         embed = build_match_embed(sample_match)
         field_names = [f.name for f in embed.fields]
-        assert "📝 AI Draft" not in field_names
+        assert "📋 Summary" not in field_names
 
     def test_embed_for_comment(self, sample_match: Match) -> None:
         """Test embed for comment type."""
@@ -182,10 +182,10 @@ class TestBuildMatchEmbed:
         content_field = next(f for f in embed.fields if f.name == "Content")
         assert len(content_field.value) <= 510  # 500 + prefix "> " + ellipsis
 
-    def test_embed_truncates_long_draft(self, sample_match: Match) -> None:
-        """Test that long draft is truncated."""
-        long_draft = "y" * 2000
-        embed = build_match_embed(sample_match, draft_content=long_draft)
+    def test_embed_truncates_long_summary(self, sample_match: Match) -> None:
+        """Test that long summary is truncated."""
+        long_summary = "y" * 2000
+        embed = build_match_embed(sample_match, summary_content=long_summary)
 
-        draft_field = next(f for f in embed.fields if f.name == "📝 AI Draft")
-        assert len(draft_field.value) <= 1003  # 1000 + "..."
+        summary_field = next(f for f in embed.fields if f.name == "📋 Summary")
+        assert len(summary_field.value) <= 1003  # 1000 + "..."

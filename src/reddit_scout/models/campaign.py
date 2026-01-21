@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class Campaign(Base, TimestampMixin):
-    """A monitoring campaign for a product."""
+    """A monitoring campaign configuration."""
 
     __tablename__ = "campaigns"
 

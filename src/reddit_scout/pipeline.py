@@ -1,4 +1,4 @@
-"""Pipeline for processing matches: AI generation → Discord notification."""
+"""Pipeline for processing matches: AI summary generation → Discord notification."""
 
 import logging
 from dataclasses import dataclass
@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from reddit_scout.ai.generator import ResponseGenerator, ResponseGeneratorError
+from reddit_scout.ai.generator import SummaryGenerator, SummaryGeneratorError
 from reddit_scout.bot.notifications import send_match_notification
 from reddit_scout.models.campaign import Campaign
 from reddit_scout.models.match import Match, MatchStatus
@@ -46,29 +46,29 @@ class PipelineResult:
 
 
 class MatchPipeline:
-    """Pipeline for processing matches through AI generation and Discord notification."""
+    """Pipeline for processing matches through AI summary generation and Discord notification."""
 
     def __init__(
         self,
         db: AsyncSession,
-        generator: ResponseGenerator | None = None,
+        generator: SummaryGenerator | None = None,
     ) -> None:
         """
         Initialize the pipeline.
 
         Args:
             db: Database session
-            generator: Response generator (created if not provided)
+            generator: Summary generator (created if not provided)
         """
         self.db = db
-        self.generator = generator or ResponseGenerator()
+        self.generator = generator or SummaryGenerator()
 
     async def get_pending_matches(self) -> list[Match]:
         """
         Get all pending matches that need processing.
 
         Returns:
-            List of matches without AI drafts
+            List of matches without summaries
         """
         stmt = (
             select(Match)
@@ -79,7 +79,7 @@ class MatchPipeline:
         result = await self.db.execute(stmt)
         matches = result.scalars().all()
 
-        # Filter to only matches without drafts
+        # Filter to only matches without summaries
         return [m for m in matches if not m.draft_responses]
 
     async def process_match(
@@ -89,7 +89,7 @@ class MatchPipeline:
         skip_notification: bool = False,
     ) -> MatchProcessingResult:
         """
-        Process a single match: generate AI draft and send notification.
+        Process a single match: generate AI summary and send notification.
 
         Args:
             match: Match to process
@@ -109,10 +109,10 @@ class MatchPipeline:
             errors=[],
         )
 
-        # Step 1: Generate AI draft
+        # Step 1: Generate AI summary
         gen_result: GenerationResult | None = None
         try:
-            gen_result = await self.generator.generate_response(
+            gen_result = await self.generator.generate_summary(
                 session=self.db,
                 match=match,
                 campaign=campaign,
@@ -121,21 +121,21 @@ class MatchPipeline:
             result.ai_content = gen_result.content
             result.ai_tokens = gen_result.tokens_used
             logger.info(
-                "Generated AI draft for match %d (%d tokens)",
+                "Generated AI summary for match %d (%d tokens)",
                 match.id,
                 gen_result.tokens_used,
             )
-        except ResponseGeneratorError as e:
+        except SummaryGeneratorError as e:
             error_msg = f"AI generation failed: {e}"
             result.errors.append(error_msg)
             logger.error("AI generation failed for match %d: %s", match.id, str(e))
 
-        # Step 2: Send Discord notification (if we have a channel and draft)
+        # Step 2: Send Discord notification (if we have a channel and summary)
         if not skip_notification and campaign.discord_channel_id and result.ai_generated:
             notification_result = await send_match_notification(
                 match=match,
                 channel_id=campaign.discord_channel_id,
-                draft_content=result.ai_content,
+                summary_content=result.ai_content,
             )
 
             if notification_result.success:
@@ -242,7 +242,7 @@ class MatchPipeline:
         await self.db.commit()
 
         logger.info(
-            "Pipeline complete: %d matches processed, %d AI drafts, %d notifications sent",
+            "Pipeline complete: %d matches processed, %d summaries, %d notifications sent",
             result.matches_processed,
             result.ai_generations_successful,
             result.notifications_sent,

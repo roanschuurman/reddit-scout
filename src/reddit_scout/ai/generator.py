@@ -1,4 +1,4 @@
-"""AI response generator service."""
+"""AI content summary generator service."""
 
 import logging
 from dataclasses import dataclass
@@ -13,41 +13,40 @@ from reddit_scout.models.match import DraftResponse, Match, RedditType
 logger = logging.getLogger(__name__)
 
 
-# Prompt template for generating responses
-RESPONSE_PROMPT_TEMPLATE = """Context:
+# Prompt template for generating content summaries
+SUMMARY_PROMPT_TEMPLATE = """Context:
 - Subreddit: r/{subreddit}
 - Type: {content_type}
 - Title: {title}
 - Content: {content}
 - Matched keyword: "{keyword}"
 
-Task: Write a helpful, natural response to this {content_type}.
-Be conversational and add value to the discussion.
-Do not be promotional or salesy.
-Keep it concise (2-3 paragraphs max)."""
+Task: Provide a brief summary of this {content_type} in 2-3 sentences.
+Focus on the key points and why it matched the keyword.
+Be factual and informative."""
 
 
 @dataclass
 class GenerationResult:
-    """Result of generating a response."""
+    """Result of generating a summary."""
 
-    draft_id: int
+    summary_id: int
     content: str
     tokens_used: int
 
 
-class ResponseGeneratorError(Exception):
-    """Error during response generation."""
+class SummaryGeneratorError(Exception):
+    """Error during summary generation."""
 
     pass
 
 
-class ResponseGenerator:
-    """Service for generating AI draft responses."""
+class SummaryGenerator:
+    """Service for generating AI content summaries."""
 
     def __init__(self, client: OpenRouterClient | None = None) -> None:
         """
-        Initialize the response generator.
+        Initialize the summary generator.
 
         Args:
             client: OpenRouter client instance (created if not provided)
@@ -62,10 +61,10 @@ class ResponseGenerator:
 
     def _build_prompt(self, match: Match, campaign: Campaign) -> list[ChatMessage]:
         """
-        Build the prompt for generating a response.
+        Build the prompt for generating a summary.
 
         Args:
-            match: The match to generate a response for
+            match: The match to generate a summary for
             campaign: The campaign with system prompt
 
         Returns:
@@ -75,7 +74,7 @@ class ResponseGenerator:
         content_type = "post" if match.reddit_type == RedditType.POST.value else "comment"
 
         # Build user message from template
-        user_message = RESPONSE_PROMPT_TEMPLATE.format(
+        user_message = SUMMARY_PROMPT_TEMPLATE.format(
             subreddit=match.subreddit,
             content_type=content_type,
             title=match.title or "(no title)",
@@ -90,25 +89,25 @@ class ResponseGenerator:
 
         return messages
 
-    async def generate_response(
+    async def generate_summary(
         self,
         session: AsyncSession,
         match: Match,
         campaign: Campaign | None = None,
     ) -> GenerationResult:
         """
-        Generate an AI draft response for a match.
+        Generate an AI content summary for a match.
 
         Args:
             session: Database session
-            match: The match to generate a response for
+            match: The match to generate a summary for
             campaign: Optional campaign (fetched if not provided)
 
         Returns:
-            GenerationResult with the generated draft
+            GenerationResult with the generated summary
 
         Raises:
-            ResponseGeneratorError: If generation fails
+            SummaryGeneratorError: If generation fails
         """
         # Get campaign if not provided
         if campaign is None:
@@ -117,66 +116,66 @@ class ResponseGenerator:
             )
             campaign = result.scalar_one_or_none()
             if campaign is None:
-                raise ResponseGeneratorError(f"Campaign {match.campaign_id} not found")
+                raise SummaryGeneratorError(f"Campaign {match.campaign_id} not found")
 
         # Build prompt
         messages = self._build_prompt(match, campaign)
 
-        # Generate response
+        # Generate summary
         try:
             client = self._get_client()
             completion = await client.chat(
                 messages=messages,
                 temperature=0.7,
-                max_tokens=1024,
+                max_tokens=512,
             )
         except Exception as e:
-            logger.error("Failed to generate response for match %d: %s", match.id, str(e))
-            raise ResponseGeneratorError(f"AI generation failed: {e}") from e
+            logger.error("Failed to generate summary for match %d: %s", match.id, str(e))
+            raise SummaryGeneratorError(f"AI generation failed: {e}") from e
 
         # Get next version number
         version = 1
         if match.draft_responses:
             version = max(d.version for d in match.draft_responses) + 1
 
-        # Create draft response
-        draft = DraftResponse(
+        # Create summary record
+        summary = DraftResponse(
             match_id=match.id,
             content=completion.content,
             version=version,
         )
-        session.add(draft)
+        session.add(summary)
         await session.flush()  # Get the ID
 
         logger.info(
-            "Generated draft v%d for match %d (%d tokens)",
+            "Generated summary v%d for match %d (%d tokens)",
             version,
             match.id,
             completion.total_tokens,
         )
 
         return GenerationResult(
-            draft_id=draft.id,
+            summary_id=summary.id,
             content=completion.content,
             tokens_used=completion.total_tokens,
         )
 
-    async def regenerate_response(
+    async def regenerate_summary(
         self,
         session: AsyncSession,
         match: Match,
         feedback: str | None = None,
     ) -> GenerationResult:
         """
-        Regenerate a response with optional feedback.
+        Regenerate a summary with optional feedback.
 
         Args:
             session: Database session
-            match: The match to regenerate a response for
+            match: The match to regenerate a summary for
             feedback: Optional user feedback to incorporate
 
         Returns:
-            GenerationResult with the new draft
+            GenerationResult with the new summary
         """
         # Get campaign
         result = await session.execute(
@@ -184,60 +183,60 @@ class ResponseGenerator:
         )
         campaign = result.scalar_one_or_none()
         if campaign is None:
-            raise ResponseGeneratorError(f"Campaign {match.campaign_id} not found")
+            raise SummaryGeneratorError(f"Campaign {match.campaign_id} not found")
 
         # Build base prompt
         messages = self._build_prompt(match, campaign)
 
-        # If we have previous drafts and feedback, include them
+        # If we have previous summaries and feedback, include them
         if match.draft_responses and feedback:
-            # Get the latest draft
-            latest_draft = max(match.draft_responses, key=lambda d: d.version)
+            # Get the latest summary
+            latest_summary = max(match.draft_responses, key=lambda d: d.version)
             messages.append(
-                ChatMessage(role="assistant", content=latest_draft.content)
+                ChatMessage(role="assistant", content=latest_summary.content)
             )
             messages.append(
                 ChatMessage(
                     role="user",
-                    content=f"Please revise the response based on this feedback: {feedback}",
+                    content=f"Please revise the summary based on this feedback: {feedback}",
                 )
             )
 
-        # Generate response
+        # Generate summary
         try:
             client = self._get_client()
             completion = await client.chat(
                 messages=messages,
                 temperature=0.7,
-                max_tokens=1024,
+                max_tokens=512,
             )
         except Exception as e:
-            logger.error("Failed to regenerate response for match %d: %s", match.id, str(e))
-            raise ResponseGeneratorError(f"AI regeneration failed: {e}") from e
+            logger.error("Failed to regenerate summary for match %d: %s", match.id, str(e))
+            raise SummaryGeneratorError(f"AI regeneration failed: {e}") from e
 
         # Get next version number
         version = 1
         if match.draft_responses:
             version = max(d.version for d in match.draft_responses) + 1
 
-        # Create new draft response
-        draft = DraftResponse(
+        # Create new summary record
+        summary = DraftResponse(
             match_id=match.id,
             content=completion.content,
             version=version,
         )
-        session.add(draft)
+        session.add(summary)
         await session.flush()
 
         logger.info(
-            "Regenerated draft v%d for match %d (%d tokens)",
+            "Regenerated summary v%d for match %d (%d tokens)",
             version,
             match.id,
             completion.total_tokens,
         )
 
         return GenerationResult(
-            draft_id=draft.id,
+            summary_id=summary.id,
             content=completion.content,
             tokens_used=completion.total_tokens,
         )

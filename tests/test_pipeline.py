@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from reddit_scout.ai.generator import GenerationResult, ResponseGenerator
+from reddit_scout.ai.generator import GenerationResult, SummaryGenerator
 from reddit_scout.models import Campaign, Match
 from reddit_scout.models.match import DraftResponse, MatchStatus, RedditType
 from reddit_scout.pipeline import MatchPipeline, MatchProcessingResult, PipelineResult
@@ -49,25 +49,25 @@ class TestMatchPipeline:
 
     @pytest.fixture
     def mock_generator(self) -> MagicMock:
-        """Create a mock response generator."""
-        generator = MagicMock(spec=ResponseGenerator)
-        generator.generate_response = AsyncMock(
+        """Create a mock summary generator."""
+        generator = MagicMock(spec=SummaryGenerator)
+        generator.generate_summary = AsyncMock(
             return_value=GenerationResult(
-                draft_id=1,
-                content="This is a helpful response.",
+                summary_id=1,
+                content="This is a helpful summary.",
                 tokens_used=50,
             )
         )
         return generator
 
     @pytest.mark.asyncio
-    async def test_get_pending_matches_returns_matches_without_drafts(
+    async def test_get_pending_matches_returns_matches_without_summaries(
         self,
         db_session: AsyncSession,
         test_campaign: Campaign,
         test_match: Match,
     ) -> None:
-        """Test that only matches without drafts are returned."""
+        """Test that only matches without summaries are returned."""
         pipeline = MatchPipeline(db_session)
 
         # Initially should find the match
@@ -76,20 +76,20 @@ class TestMatchPipeline:
         assert matches[0].id == test_match.id
 
     @pytest.mark.asyncio
-    async def test_get_pending_matches_excludes_matches_with_drafts(
+    async def test_get_pending_matches_excludes_matches_with_summaries(
         self,
         db_session: AsyncSession,
         test_campaign: Campaign,
         test_match: Match,
     ) -> None:
-        """Test that matches with drafts are excluded."""
-        # Add a draft to the match
-        draft = DraftResponse(
+        """Test that matches with summaries are excluded."""
+        # Add a summary to the match
+        summary = DraftResponse(
             match_id=test_match.id,
-            content="Existing draft",
+            content="Existing summary",
             version=1,
         )
-        db_session.add(draft)
+        db_session.add(summary)
         await db_session.flush()  # Flush to ensure it's written
         await db_session.commit()
 
@@ -99,7 +99,7 @@ class TestMatchPipeline:
         pipeline = MatchPipeline(db_session)
         matches = await pipeline.get_pending_matches()
 
-        # Should not find the match since it has a draft
+        # Should not find the match since it has a summary
         assert len(matches) == 0
 
     @pytest.mark.asyncio
@@ -119,14 +119,14 @@ class TestMatchPipeline:
         assert len(matches) == 0
 
     @pytest.mark.asyncio
-    async def test_process_match_generates_draft(
+    async def test_process_match_generates_summary(
         self,
         db_session: AsyncSession,
         test_campaign: Campaign,
         test_match: Match,
         mock_generator: MagicMock,
     ) -> None:
-        """Test that processing a match generates an AI draft."""
+        """Test that processing a match generates an AI summary."""
         pipeline = MatchPipeline(db_session, generator=mock_generator)
 
         result = await pipeline.process_match(
@@ -136,7 +136,7 @@ class TestMatchPipeline:
         )
 
         assert result.ai_generated is True
-        assert result.ai_content == "This is a helpful response."
+        assert result.ai_content == "This is a helpful summary."
         assert result.ai_tokens == 50
         assert len(result.errors) == 0
 
@@ -148,11 +148,11 @@ class TestMatchPipeline:
         test_match: Match,
     ) -> None:
         """Test that AI generation errors are handled."""
-        from reddit_scout.ai.generator import ResponseGeneratorError
+        from reddit_scout.ai.generator import SummaryGeneratorError
 
-        mock_generator = MagicMock(spec=ResponseGenerator)
-        mock_generator.generate_response = AsyncMock(
-            side_effect=ResponseGeneratorError("AI Error")
+        mock_generator = MagicMock(spec=SummaryGenerator)
+        mock_generator.generate_summary = AsyncMock(
+            side_effect=SummaryGeneratorError("AI Error")
         )
 
         pipeline = MatchPipeline(db_session, generator=mock_generator)

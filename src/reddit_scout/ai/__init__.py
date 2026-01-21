@@ -1,4 +1,4 @@
-"""AI response generation module."""
+"""AI content summary generation module."""
 
 from reddit_scout.ai.client import (
     ChatCompletion,
@@ -10,8 +10,8 @@ from reddit_scout.ai.client import (
 )
 from reddit_scout.ai.generator import (
     GenerationResult,
-    ResponseGenerator,
-    ResponseGeneratorError,
+    SummaryGenerator,
+    SummaryGeneratorError,
 )
 
 __all__ = [
@@ -22,6 +22,6 @@ __all__ = [
     "OpenRouterError",
     "OpenRouterRateLimitError",
     "GenerationResult",
-    "ResponseGenerator",
-    "ResponseGeneratorError",
+    "SummaryGenerator",
+    "SummaryGeneratorError",
 ]
