@@ -216,8 +216,8 @@ class HNScanner:
         item: HNItemData,
         keyword_map: dict[str, list[tuple[int, int]]],
         source: ContentSource,
-    ) -> tuple[HNItem, int]:
-        """Process a single item: store it and create alerts for matches.
+    ) -> tuple[bool, int]:
+        """Process a single item: only store if it matches keywords.
 
         Args:
             item: HN item data
@@ -225,19 +225,23 @@ class HNScanner:
             source: Content source record
 
         Returns:
-            Tuple of (stored HNItem, number of alerts created)
+            Tuple of (was_stored, alerts_created)
         """
-        # Store the item
-        hn_item = await self.store_item(item)
-
         # Get searchable text
         text = get_searchable_text(item)
         if not text:
-            return hn_item, 0
+            return False, 0
 
-        # Match keywords
+        # Match keywords FIRST
         all_keywords = list(keyword_map.keys())
         matched_keywords = match_keywords(text, all_keywords)
+
+        # Only store if there's at least one match
+        if not matched_keywords:
+            return False, 0
+
+        # Store the item (only matched items)
+        hn_item = await self.store_item(item)
 
         alerts_created = 0
         for matched_keyword in matched_keywords:
@@ -253,7 +257,7 @@ class HNScanner:
                         item.id,
                     )
 
-        return hn_item, alerts_created
+        return True, alerts_created
 
     async def scan(self, initial_lookback: int = 100) -> ScanResult:
         """Run a scan for new HN items.
@@ -324,8 +328,9 @@ class HNScanner:
             items = await self.hn_client.get_items_batch(batch_ids)
 
             for item in items:
-                hn_item, alerts = await self.process_item(item, keyword_map, source)
-                total_stored += 1
+                was_stored, alerts = await self.process_item(item, keyword_map, source)
+                if was_stored:
+                    total_stored += 1
                 total_alerts += alerts
 
             total_scanned += len(batch_ids)
