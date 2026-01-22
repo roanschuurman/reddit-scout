@@ -31,11 +31,32 @@ class CommunityScoutBot(commands.Bot):
         """Called when the bot is starting up."""
         logger.info("Bot setup hook called")
 
+        # Set up slash commands
+        from community_scout.bot.commands import setup_commands
+
+        await setup_commands(self)
+
+        # Sync commands to guild
+        if settings.discord_guild_id:
+            guild = discord.Object(id=int(settings.discord_guild_id))
+            self.tree.copy_global_to(guild=guild)
+            await self.tree.sync(guild=guild)
+            logger.info("Synced commands to guild %s", settings.discord_guild_id)
+        else:
+            await self.tree.sync()
+            logger.info("Synced commands globally")
+
     async def on_ready(self) -> None:
         """Called when the bot is ready and connected."""
         self._bot_ready = True
         logger.info("Bot connected as %s (ID: %s)", self.user, self.user.id if self.user else None)
         logger.info("Connected to %d guilds", len(self.guilds))
+
+    async def on_member_join(self, member: discord.Member) -> None:
+        """Called when a member joins a guild."""
+        from community_scout.bot.onboarding import on_member_join_handler
+
+        await on_member_join_handler(member)
 
     async def on_error(self, event: str, *args: object, **kwargs: object) -> None:
         """Handle errors in event handlers."""

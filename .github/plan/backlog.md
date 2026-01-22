@@ -2,7 +2,7 @@
 
 ## Current Sprint
 
-- Sprint 08: Pivot Foundation - DONE (see sprint_backup/sprint-08-2026-01-22.md)
+- Sprint 09: Discord Bot - Onboarding & Commands - IN PROGRESS
 
 ## Completed
 
