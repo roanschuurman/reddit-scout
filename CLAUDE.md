@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Reddit Scout is an AI-powered Reddit monitoring and engagement tool. It monitors subreddits for keyword matches, generates AI-drafted responses, and notifies users via Discord for manual posting.
+Community Scout is a Discord-first Hacker News monitoring service. Users join a Discord server, get auto-provisioned personal channels, and configure their own keywords via slash commands. Notifications arrive in threads organized by source (Hacker News for now, extensible to other platforms).
 
 ## Development Commands
 
@@ -16,7 +16,7 @@ docker compose up
 uv pip install -e ".[dev]"
 
 # Run web app locally
-uvicorn reddit_scout.api.main:app --reload
+uvicorn community_scout.api.main:app --reload
 
 # Run tests
 pytest
@@ -27,7 +27,7 @@ ruff check src tests
 # Run type checker
 mypy src
 
-# Database migrations (after Alembic is set up)
+# Database migrations
 alembic upgrade head
 alembic revision --autogenerate -m "description"
 ```
@@ -35,37 +35,50 @@ alembic revision --autogenerate -m "description"
 ## Tech Stack
 
 - **Backend**: Python with FastAPI
-- **Frontend**: HTMX + Jinja2 templates with Tailwind CSS + DaisyUI
 - **Database**: PostgreSQL
-- **Auth**: SuperTokens
-- **Reddit API**: PRAW (Python Reddit API Wrapper)
-- **Discord**: discord.py
-- **AI**: OpenRouter API
+- **Discord**: discord.py (slash commands, auto-provisioning)
+- **AI**: OpenRouter API (per-user API keys supported)
+- **Encryption**: cryptography (Fernet for API key storage)
 - **Deployment**: Docker, Hetzner VPS with Coolify
 
 ## Architecture
 
-Three main services:
-1. **FastAPI Web App** - Campaign management, subreddit discovery, match history
-2. **Scanner Service** - Background cron job that monitors Reddit for keyword matches
-3. **Discord Bot** - Sends notifications with AI drafts, handles refinement interactions
+Two main services:
+1. **FastAPI Web App** - Health checks, minimal API
+2. **Discord Bot** - User onboarding, keyword management, alert notifications
+
+Scanner service (coming in Sprint 10):
+- **HN Scanner** - Polls Hacker News for new stories/comments, matches keywords
 
 All services share a PostgreSQL database.
 
 ## Core Data Models
 
-- **User** - Authentication via SuperTokens
-- **Campaign** - Product-specific monitoring config (system prompt, scan frequency, Discord channel)
-- **CampaignSubreddit** - Subreddits to monitor per campaign
-- **CampaignKeyword** - Keywords to match per campaign
-- **Match** - Discovered Reddit posts/comments (status: pending/done/skipped)
-- **DraftResponse** - AI-generated response versions per match
+- **DiscordUser** - Discord user with channel_id, optional OpenRouter API key
+- **UserKeyword** - Keywords to monitor per user
+- **ContentSource** - Content sources (e.g., "hackernews")
+- **SourceThread** - User's Discord thread per source
+- **HNItem** - Hacker News stories and comments
+- **UserAlert** - Alerts for matched content (status: pending/sent/dismissed)
 
 ## Key Design Decisions
 
-- Human-in-the-loop: Automate discovery and drafting, keep posting manual (prevents bans)
-- Discord-first workflow for notifications and response refinement
-- Multi-tenant from start (users only see their own campaigns)
+- Discord-first: All interactions via slash commands
+- Per-user configuration: Each user has their own keywords and API key
+- Personal channels: Auto-provisioned on member join
+- Source threads: Organized alerts by content source
+- Encryption: User API keys stored encrypted
+
+## Environment Variables
+
+```
+DATABASE_URL                 # PostgreSQL connection string
+DISCORD_BOT_TOKEN            # Discord bot token
+DISCORD_GUILD_ID             # Server where bot operates
+ENCRYPTION_KEY               # Fernet key for API key encryption
+OPENROUTER_API_KEY           # Default API key (for users without their own)
+HN_SCAN_INTERVAL_MINUTES     # Scan frequency (default: 5)
+```
 
 ## Workflow
 

@@ -2,7 +2,7 @@
 
 from fastapi.testclient import TestClient
 
-from reddit_scout.api.main import app
+from community_scout.api.main import app
 
 client = TestClient(app)
 

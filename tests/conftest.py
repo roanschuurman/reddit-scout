@@ -7,11 +7,9 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy import StaticPool
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from reddit_scout.api.deps import SESSION_COOKIE_NAME, create_session_token
-from reddit_scout.api.main import app
-from reddit_scout.auth import hash_password
-from reddit_scout.database import get_db
-from reddit_scout.models import Base, Campaign, User
+from community_scout.api.main import app
+from community_scout.database import get_db
+from community_scout.models import Base, ContentSource, DiscordUser, UserKeyword
 
 # Use in-memory SQLite for tests
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -71,11 +69,12 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
 
 
 @pytest.fixture
-async def test_user(db_session: AsyncSession) -> User:
-    """Create a test user."""
-    user = User(
-        email="test@example.com",
-        password_hash=hash_password("password123"),
+async def test_discord_user(db_session: AsyncSession) -> DiscordUser:
+    """Create a test Discord user."""
+    user = DiscordUser(
+        discord_id="123456789012345678",
+        discord_username="testuser",
+        channel_id="987654321098765432",
     )
     db_session.add(user)
     await db_session.commit()
@@ -84,22 +83,23 @@ async def test_user(db_session: AsyncSession) -> User:
 
 
 @pytest.fixture
-def auth_cookies(test_user: User) -> dict[str, str]:
-    """Get authentication cookies for test user."""
-    token = create_session_token(test_user.id)
-    return {SESSION_COOKIE_NAME: token}
+async def test_keyword(db_session: AsyncSession, test_discord_user: DiscordUser) -> UserKeyword:
+    """Create a test keyword for a user."""
+    keyword = UserKeyword(
+        user_id=test_discord_user.id,
+        phrase="python",
+    )
+    db_session.add(keyword)
+    await db_session.commit()
+    await db_session.refresh(keyword)
+    return keyword
 
 
 @pytest.fixture
-async def test_campaign(db_session: AsyncSession, test_user: User) -> Campaign:
-    """Create a test campaign."""
-    campaign = Campaign(
-        user_id=test_user.id,
-        name="Test Campaign",
-        system_prompt="You are a helpful assistant.",
-        is_active=True,
-    )
-    db_session.add(campaign)
+async def test_content_source(db_session: AsyncSession) -> ContentSource:
+    """Create a test content source."""
+    source = ContentSource(name="hackernews")
+    db_session.add(source)
     await db_session.commit()
-    await db_session.refresh(campaign)
-    return campaign
+    await db_session.refresh(source)
+    return source

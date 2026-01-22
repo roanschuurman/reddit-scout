@@ -1,7 +1,7 @@
 [project]
-name = "reddit-scout"
-version = "0.1.0"
-description = "Reddit content monitoring and notification service"
+name = "community-scout"
+version = "0.2.0"
+description = "Discord-first community content monitoring service"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -15,17 +15,14 @@ dependencies = [
     "pydantic-settings>=2.1.0",
     "jinja2>=3.1.0",
     "python-multipart>=0.0.6",
-    "praw>=7.7.0",
     "discord.py>=2.3.0",
     "httpx>=0.26.0",
-    "supertokens-python>=0.22.0",
-    "bcrypt>=4.0.0",
-    "itsdangerous>=2.1.0",
+    "cryptography>=42.0.0",
 ]
 
 [project.scripts]
-reddit-scout-scanner = "reddit_scout.scanner.cli:main"
-reddit-scout-pipeline = "reddit_scout.pipeline_cli:main"
+community-scout-scanner = "community_scout.scanner.cli:main"
+community-scout-pipeline = "community_scout.pipeline_cli:main"
 
 [project.optional-dependencies]
 dev = [

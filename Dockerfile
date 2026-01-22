@@ -24,4 +24,4 @@ RUN chmod +x scripts/entrypoint.sh
 ENV PYTHONPATH=/app/src
 
 ENTRYPOINT ["scripts/entrypoint.sh"]
-CMD ["uvicorn", "reddit_scout.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "community_scout.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
