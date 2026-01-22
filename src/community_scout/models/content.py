@@ -1,4 +1,4 @@
-"""Content models for HN items and user alerts."""
+"""Content models for HN items, user alerts, and scanner state."""
 
 from datetime import datetime
 from enum import Enum
@@ -11,6 +11,17 @@ from community_scout.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
     from community_scout.models.discord_user import DiscordUser, SourceThread, UserKeyword
+
+
+class ScannerState(Base):
+    """Tracks scanner progress for each content source."""
+
+    __tablename__ = "scanner_state"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source_name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    last_seen_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_scan_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class AlertStatus(str, Enum):

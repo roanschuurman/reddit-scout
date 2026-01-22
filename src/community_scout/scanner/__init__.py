@@ -1,6 +1,19 @@
-"""Content scanner service module.
+"""Content scanner service module."""
 
-This module will be populated in Sprint 10 with HN scanning functionality.
-"""
+from community_scout.scanner.hn_scanner import (
+    HNScanner,
+    ScanResult,
+    match_keywords,
+)
+from community_scout.scanner.state import (
+    get_scanner_state,
+    update_scanner_state,
+)
 
-__all__: list[str] = []
+__all__ = [
+    "HNScanner",
+    "ScanResult",
+    "match_keywords",
+    "get_scanner_state",
+    "update_scanner_state",
+]

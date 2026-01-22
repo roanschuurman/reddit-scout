@@ -6,6 +6,7 @@ from community_scout.models.content import (
     ContentSource,
     HNItem,
     HNItemType,
+    ScannerState,
     UserAlert,
 )
 from community_scout.models.discord_user import DiscordUser, SourceThread, UserKeyword
@@ -21,4 +22,5 @@ __all__ = [
     "HNItemType",
     "UserAlert",
     "AlertStatus",
+    "ScannerState",
 ]
