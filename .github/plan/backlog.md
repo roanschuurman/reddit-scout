@@ -2,10 +2,19 @@
 
 ## Current Sprint
 
-- Sprint 07: Discord Enhancements - IN PROGRESS
+- Sprint 08: Pivot Foundation - DONE (see sprint_backup/sprint-08-2026-01-22.md)
 
 ## Completed
 
+### Community Scout (Post-Pivot)
+- Sprint 08: Pivot Foundation - DONE
+  - Renamed package to community_scout
+  - New data models (DiscordUser, UserKeyword, HNItem, UserAlert, etc.)
+  - Removed Reddit/PRAW dependencies
+  - API key encryption utility
+
+### Reddit Scout (Pre-Pivot, Archived)
+- Sprint 07: Discord Enhancements - SUPERSEDED (see sprint_backup/sprint-07-2026-01-22.md)
 - Sprint 06: Subreddit Discovery - DONE (see sprint_backup/sprint-06-2026-01-17.md)
 - Sprint 05: AI Response Generation & Discord Notifications - DONE (see sprint_backup/sprint-05-2026-01-17.md)
 - Sprint 04: Reddit Scanner Service - DONE (see sprint_backup/sprint-04-2026-01-17.md)
@@ -13,60 +22,38 @@
 - Sprint 02: Campaign CRUD - DONE (see sprint_backup/sprint-02-2026-01-14.md)
 - Sprint 01: Project Foundation - DONE (see sprint_backup/sprint-01-2026-01-14.md)
 
-## Upcoming
+## Upcoming Sprints
 
-### Foundation & Infrastructure
-- [x] Alembic migrations setup _(Sprint 01)_
-- [x] User registration/login flow _(Sprint 01)_
-- [ ] SuperTokens auth integration _(deferred - using session auth for MVP)_
+### Sprint 09: Discord Bot - Onboarding & Commands
+- [ ] Implement on_member_join → create personal channel
+- [ ] Create source thread (Hacker News) in channel
+- [ ] Welcome message with instructions
+- [ ] Slash commands: /keyword add/remove/list
+- [ ] Slash commands: /apikey set (modal), /status
+- [ ] /pause and /resume commands
 
-### Campaign Management (Web App)
-- [x] Campaign CRUD operations _(Sprint 02)_
-- [x] Configure subreddits per campaign _(Sprint 03)_
-- [x] Configure keywords per campaign _(Sprint 03)_
-- [x] Custom AI system prompt per campaign _(Sprint 02 - part of campaign create/edit)_
-- [x] Set scan frequency (2x/day to 1x/hour) _(Sprint 03)_
-- [x] Assign Discord channel per campaign _(Sprint 03)_
+### Sprint 10: Hacker News Integration
+- [ ] Create HN API client (stories + comments)
+- [ ] Scanner service for HN (polls every 5 mins)
+- [ ] Keyword matching against HN content
+- [ ] UserAlert creation for matches
+- [ ] Track last_seen_id for incremental scanning
 
-### Subreddit Discovery (Web App)
-- [x] Search subreddits by keyword _(Sprint 06)_
-- [x] Display subscriber count + active users _(Sprint 06)_
-- [x] Preview recent posts before adding _(Sprint 06)_
-- [ ] Show related subreddit suggestions
-
-### Reddit Monitoring (Scanner Service)
-- [x] PRAW integration for Reddit API _(Sprint 04)_
-- [x] Scan subreddits at configured frequency _(Sprint 04)_
-- [x] Match posts AND comments against keywords _(Sprint 04)_
-- [x] Deduplicate matches _(Sprint 04)_
-- [x] Queue matches for AI processing _(Sprint 05)_
-
-### AI Response Generation
-- [x] OpenRouter integration _(Sprint 05)_
-- [x] Generate contextual responses using campaign system prompt _(Sprint 05)_
-- [x] Adapt tone based on context (post vs comment reply) _(Sprint 05)_
-
-### Discord Integration
-- [x] Discord bot setup _(Sprint 05)_
-- [x] Send notifications to campaign-specific channels _(Sprint 05)_
-- [x] Include: subreddit, post age, keyword, snippet, AI draft, link _(Sprint 05)_
-- [x] Buttons: Done, Skip _(Sprint 05)_
-- [ ] Regenerate button (request new AI draft)
-- [ ] Refine button with thread-based conversation
-- [ ] Copy Final button
-
-### Match Tracking (Web App)
-- [ ] Mark items as done from Discord
-- [ ] View match history (pending, completed, skipped)
-- [ ] Filter by campaign, date, status
+### Sprint 11: Notification Pipeline
+- [ ] Per-user AI summary generation (using their API key)
+- [ ] Post alerts to user's source thread
+- [ ] Fallback message for users without API key
+- [ ] Regenerate button for new AI summary
+- [ ] Refine button with thread conversation _(from Sprint 07)_
+- [ ] Copy button for easy copying _(from Sprint 07)_
+- [ ] Dismiss button functionality
 
 ## Ideas / Someday
 
-- Web-based response editor with AI chat
-- Analytics & insights (engagement tracking, UTM clicks)
+- Additional content sources (Reddit, Twitter/X, Lobste.rs)
+- Web dashboard for viewing alert history
 - Semantic search (beyond keyword matching)
-- Sentiment filtering
-- Team features (multiple users, roles)
-- Slack integration
-- Browser extension for one-click posting
-- Mobile app
+- Sentiment/relevance filtering
+- Team features (shared keywords)
+- Scheduled digest mode (daily/weekly summary)
+- Browser extension for quick actions
