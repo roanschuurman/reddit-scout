@@ -48,6 +48,9 @@ class HNItemData:
         if not isinstance(item_id, int) or not author or not time_val:
             return None
 
+        score_val = data.get("score", 0)
+        parent_val = data.get("parent")
+
         return cls(
             id=item_id,
             item_type=str(item_type),
@@ -55,9 +58,9 @@ class HNItemData:
             text=str(data["text"]) if data.get("text") else None,
             url=str(data["url"]) if data.get("url") else None,
             author=str(author),
-            score=int(data.get("score", 0)),
-            parent_id=int(data["parent"]) if data.get("parent") else None,
-            created_at=datetime.fromtimestamp(int(time_val), tz=UTC),
+            score=int(str(score_val)) if score_val else 0,
+            parent_id=int(str(parent_val)) if parent_val else None,
+            created_at=datetime.fromtimestamp(int(str(time_val)), tz=UTC),
         )
 
 
@@ -114,7 +117,8 @@ class HNClient:
                 if response.status_code == 404:
                     return None
                 response.raise_for_status()
-                return response.json()
+                result: object = response.json()
+                return result
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == 404:
                     return None
@@ -195,8 +199,8 @@ class HNClient:
 
         items: list[HNItemData] = []
         for result in results:
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
                 logger.warning("Failed to fetch item: %s", result)
-            elif result is not None:
+            elif isinstance(result, HNItemData):
                 items.append(result)
         return items
